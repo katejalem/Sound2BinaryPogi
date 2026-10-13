@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sound-to-Binary Converter — BitWave Studio</title>
+<meta name="description" content="Enter a wave, press Convert, and read its measurements and binary result. One full wave is sampled evenly over its period." />
+<meta name="theme-color" content="#2563eb" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M6 16h4l3-8 4 16 3-8h6' stroke='white' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<a class="skip" href="#sampleTableWrap">Skip to results</a>
+<noscript><div class="noscript">This converter needs JavaScript to calculate and draw the wave.</div></noscript>
+<div class="page">
+<header class="topbar">
+<div class="brand"><span class="brand-mark">~</span> BitWave Studio</div>
+<div class="topbar-note">BSCS-3 &middot; Section 36 &middot; Multimedia</div>
+</header>
+<section class="hero">
+<div class="hero-pills">
+<span class="pill">Multimedia &bull; BitWave</span>
+<span class="pill pill-outline">BSCS-3 | Multimedia</span>
+</div>
+<h1>Sound-to-Binary Converter</h1>
+<p class="lead">Enter a wave, press Convert, and read its measurements and binary result. One full wave is sampled evenly over its period.</p>
+<p class="meta"><span class="avatar" aria-hidden="true">N</span><span><strong>Nash Bruce V. Quiros</strong> &nbsp;&middot;&nbsp; BSCS-3 | Section 36 | Multimedia</span></p>
+</section>
+<main class="grid-main">
+<section class="card" id="inputs" aria-labelledby="h-inputs">
+<div class="sec-head"><span class="sec-num">01</span><div><h2 id="h-inputs">Your Wave Inputs</h2><p class="sec-sub" id="inputsSub">Wave settings &mdash; synthetic sine tone</p></div></div>
+<div class="segmented" role="group" aria-label="Source mode">
+<button type="button" class="seg-btn" id="modeSynthetic" aria-pressed="true">Synthetic Tone</button>
+<button type="button" class="seg-btn" id="modeUpload" aria-pressed="false">Upload MP3</button>
+</div>
+<p class="mode-note" id="modeNote">Synthetic mode: one full sine wave sampled evenly over its period.</p>
+<div class="grid-inputs">
+<div class="field" id="fieldFreq"><label for="freq">Frequency (Hz)</label><input id="freq" type="number" value="1000" min="1" step="any" inputmode="decimal" aria-describedby="freqHint" /><small id="freqHint">Pitch &mdash; must be greater than 0. Try 440, 200, 500.</small></div>
+<div class="field"><label for="amp">Amplitude (0 to 1)</label><input id="amp" type="number" value="1" min="0" max="1" step="any" inputmode="decimal" aria-describedby="ampHint" /><small id="ampHint">Loudness &mdash; 0 is silent, 1 is loudest. In MP3 mode this acts as gain.</small></div>
+<div class="field"><label for="samples">Samples (2 to 64)</label><input id="samples" type="number" value="4" min="2" max="64" step="1" inputmode="numeric" aria-describedby="samplesHint" /><small id="samplesHint">Whole number only. More samples is smoother.</small></div>
+<div class="field"><label for="bits">Bits per sample (1 to 8)</label><input id="bits" type="number" value="2" min="1" max="8" step="1" inputmode="numeric" aria-describedby="bitsHint" /><small id="bitsHint">Whole number only. More bits is more detail.</small></div>
+</div>
+<div class="upload-block" id="uploadBlock" hidden>
+<div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose an MP3 file. Press Enter to browse.">
+<input id="mp3File" type="file" accept="audio/mpeg,audio/mp3,audio/*,.mp3" hidden />
+<span class="dz-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none"><path d="M10 12.5v-8M6.5 8.5 10 5l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 12.5v2A2.5 2.5 0 0 0 6 17h8a2.5 2.5 0 0 0 2.5-2.5v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+<span class="dz-title">Drop MP3 here or click to browse</span>
+<span class="dz-sub">MP3 only &middot; up to 12MB &middot; first 1 second is converted</span>
+<span class="dz-file" id="dzFile">No file selected</span>
+</div>
+<p class="file-meta" id="fileMeta" aria-live="polite">No file selected.</p>
+<audio id="uploadAudio" controls preload="metadata" hidden></audio>
+</div>
+<div class="btn-row">
+<button id="convertBtn" class="btn btn-primary"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h9M8 3.5 12.5 8 8 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="convertLabel">Convert</span></button>
+<button id="playBtn" class="btn btn-secondary"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 2.5v11l9-5.5-9-5.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span id="playLabel">Play Tone (1s)</span></button>
+<button id="copyBtnTop" class="btn btn-ghost"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-5A1.5 1.5 0 0 0 3 3.5v5A1.5 1.5 0 0 0 4.5 10H5" stroke="currentColor" stroke-width="1.5"/></svg>Copy Binary</button>
+</div>
+<div class="quick-row"><span class="quick-label">Quick fill:</span>
+<button class="chip" data-preset="check">Check</button>
+<button class="chip" data-preset="a">Test A</button>
+<button class="chip" data-preset="b">Test B</button>
+<button class="chip" data-preset="c">Test C</button>
+</div>
+<p class="hint">Press Play to hear the tone. Turn your volume down first. <span id="audioStatus" aria-live="polite"></span></p>
+<div id="error" class="error" role="alert" aria-live="assertive" hidden></div>
+</section>
+<section class="card" id="facts" aria-labelledby="h-facts">
+<div class="sec-head"><span class="sec-num">02</span><div><h2 id="h-facts">Wave Facts</h2><p class="sec-sub" id="factsSub">Measured from your inputs</p></div></div>
+<div class="metrics">
+<div class="metric"><span class="m-label" id="lblAmp">Amplitude</span><span class="m-value" id="mAmp">&mdash;</span></div>
+<div class="metric"><span class="m-label" id="lblFreq">Frequency</span><span class="m-value" id="mFreq">&mdash;</span></div>
+<div class="metric"><span class="m-label" id="lblPeriod">Period</span><span class="m-value" id="mPeriod">&mdash;</span></div>
+<div class="metric"><span class="m-label" id="lblWave">Wavelength</span><span class="m-value" id="mWave">&mdash;</span></div>
+</div>
+<p class="placeholder" id="factsPlaceholder">Press Convert to see results. Try: frequency 1000, amplitude 1, samples 4, bits 2.</p>
+<div class="wave-wrap" id="synthWaveWrap">
+<div class="wave-top"><span class="live"><span class="live-dot" id="liveDot"></span>LIVE</span><button id="pauseBtn" class="btn btn-small btn-secondary" aria-pressed="true">Pause animation</button></div>
+<canvas id="waveCanvas" height="240" aria-label="Animated sine wave preview" role="img"></canvas>
+<p class="wave-desc">Live preview &mdash; the wave scrolls and the dots ride it. The table is a frozen snapshot at phase 0.</p>
+</div>
+<div class="wave-wrap" id="uploadWaveWrap" hidden>
+<div class="wave-top"><span class="live"><span class="live-dot upload-dot"></span>UPLOAD</span><span class="wave-window" id="uploadWindowLabel"></span></div>
+<canvas id="uploadCanvas" height="160" aria-label="Uploaded MP3 waveform preview" role="img"></canvas>
+<p class="wave-desc" id="uploadDesc">First 1 second of your MP3, averaged to N samples. Dots mark the sampled points.</p>
+</div>
+</section>
+<section class="card span-all" id="sampleSec" aria-labelledby="h-sample">
+<div class="sec-head"><span class="sec-num">03</span><div><h2 id="h-sample">Sample Table</h2><p class="sec-sub" id="sampleSub">One row per sample, snapshot at phase zero</p></div></div>
+<div class="table-scroll" id="sampleTableWrap" tabindex="0" role="region" aria-label="Sample table, scrollable"><table id="sampleTable">
+<thead><tr><th scope="col">Sample #</th><th scope="col">Time (ms)</th><th scope="col">Amplitude</th><th scope="col">Level</th><th scope="col">Binary</th></tr></thead>
+<tbody id="sampleBody"><tr class="empty-row"><td colspan="5">No data yet &mdash; press Convert.</td></tr></tbody>
+</table></div>
+<p class="scroll-hint">Swipe sideways to see all columns on mobile.</p>
+</section>
+<section class="card span-all" id="binarySec" aria-labelledby="h-binary">
+<div class="sec-head"><span class="sec-num">04</span><div><h2 id="h-binary">Binary Result</h2><p class="sec-sub" id="binarySub">Single-line output, one space between values</p></div></div>
+<div class="binary-panel"><div class="binary-line" id="binaryOutput" aria-live="polite">&mdash;</div>
+<div class="binary-meta"><span class="total-badge">Total bits: <strong id="totalBits">&mdash;</strong></span><button id="copyBtn" class="btn btn-small btn-ghost">Copy Binary</button></div>
+</div>
+</section>
+<section class="card span-all" id="tests" aria-labelledby="h-tests">
+<div class="sec-head"><span class="sec-num">05</span><div><h2 id="h-tests">Test Results</h2><p class="sec-sub">matches app output</p></div></div>
+<p class="small-note">These numbers are computed by this page's own converter logic &mdash; not hardcoded.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Test results table, scrollable"><table id="testTable">
+<thead><tr><th scope="col">Test</th><th scope="col">Frequency</th><th scope="col">Amplitude</th><th scope="col">Samples</th><th scope="col">Bits</th><th scope="col">Period</th><th scope="col">Wavelength</th><th scope="col">Total bits</th><th scope="col">Binary result</th></tr></thead>
+<tbody id="testBody"><tr class="empty-row"><td colspan="9">Loading&hellip;</td></tr></tbody>
+</table></div>
+<p class="scroll-hint">Swipe sideways to see all columns on mobile.</p>
+</section>
+<section class="card span-all" id="explain" aria-labelledby="h-explain">
+<div class="sec-head"><span class="sec-num">06</span><div><h2 id="h-explain">Explain It</h2><p class="sec-sub">Short answers</p></div></div>
+<div class="qa"><h3><span class="q-num">1</span> How does your app change a sound wave into binary? Name the three steps.</h3>
+<p class="answer">My converter breaks the process into three stages. Sampling measures the wave's height at evenly spaced moments within one period. Quantization then maps each measured height onto the nearest whole level, where the allowed levels run from 0 up to 2^bits - 1. Encoding finishes the job by turning every level into a binary string with padStart, so each value ends up with exactly bits digits, leading zeros included.</p></div>
+<div class="qa"><h3><span class="q-num">2</span> Run Test A again with 2 bits, then 6 bits. Which gives more detail about the wave, and why?</h3>
+<p class="answer">Test A with 6 bits is clearly the more detailed one. The bit count decides how many levels are available: 2 bits gives just 4 levels, while 6 bits opens up 64. With so few levels, each sample has to be pushed to a level that may sit far from its real height, so the shape of the wave gets distorted. The finer 64-step ladder keeps every value much closer to where the wave actually was.</p></div>
+<div class="qa"><h3><span class="q-num">3</span> Which test has the longest wavelength? How is wavelength connected to frequency?</h3>
+<p class="answer">Among the three tests, Test B has the longest wavelength, measuring about 1.72 m. The two quantities are inversely proportional, linked by wavelength = 343 / frequency. That means doubling the frequency cuts the wavelength in half, and halving the frequency doubles it. Since Test B runs at only 200 Hz, the slowest of the set, its wave stretches out the farthest.</p></div>
+<div class="qa"><h3><span class="q-num">4</span> What was the hardest stage to build, and how did you fix it?</h3>
+<p class="answer">Quantization gave me the most trouble. The heights arriving from the sine function range from -1 to +1, but the levels must be whole numbers starting at 0, and early attempts produced values that fell outside the valid range or landed unevenly at the endpoints. I solved it with the formula level = round(((height + 1) / 2) * (levels - 1)), which always lands inside 0 to levels - 1. I then locked it down by checking the known case of frequency 1000, amplitude 1, samples 4, bits 2, which must return 10 11 10 00, and I used padStart so the shorter binary values kept their leading zeros.</p></div>
+</section>
+</main>
+<footer class="footer">
+<p>Made by Nash Bruce V. Quiros &mdash; BSCS-3 | Section 36 &mdash; Sound-to-Binary Converter</p>
+<div class="foot-btns"><button class="btn btn-small btn-secondary" id="footConvert">Convert</button><button class="btn btn-small btn-ghost" id="playBtnFoot">Play</button></div>
+</footer>
+</div>
+<script src="script.js"></script>
+</body></html>
